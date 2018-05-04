@@ -14,11 +14,11 @@
 #' @export
 #' @examples
 #' ## should use Xlib for the x11() device under *nix, e.g
-#' if (interactive()) {
-#'   if (.Platform$OS.type == 'windows') x11() else x11(type = 'Xlib')
-#'   mine_sweeper()
-#' }
-x11(type = "Xlib")
+if (interactive()) {
+  if (.Platform$OS.type == 'windows') x11() else x11(type = 'Xlib')
+  mine_sweeper()
+}
+
 mine_sweeper <- function(width = 10, height = 10, mines = 20, cheat = FALSE) {
   # Deal with some exceptions
   if (!interactive()) return()
