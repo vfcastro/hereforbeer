@@ -3,30 +3,31 @@ if (interactive()) {
 }
 
 # Cria o jogador
-MakePlayer <- function(coordx=0, coordy=0, newlife=3, newammo=3){
-	return (list(x = coordx, y = coordy, life = newlife, ammo = newammo))
+MakePlayer <- function(x=0, y=0, xsize=3, ysize=1, life=3, ammo=3){
+	return (list(x = x, y = y, xsize=xsize, ysize=ysize, life = life, ammo = ammo))
 }
 
 # Atualiza o player dependendo do botão pressionado
 UpdatePlayer <- function(key, player){
 	if(key == "a")
-	  return (MakePlayer(player[["x"]]-1, player[["y"]], player[["life"]], player[["ammo"]]))
+	  return (MakePlayer(x=player[["x"]]-1, y=player[["y"]]))
 	if(key == "d")
-	  return (MakePlayer(player[["x"]]+1, player[["y"]], player[["life"]], player[["ammo"]]))
+	  return (MakePlayer(x=player[["x"]]+1, y=player[["y"]]))
 	if(key == "w")
-	  return (MakePlayer(player[["x"]], player[["y"]]+1, player[["life"]], player[["ammo"]]-1))
-	player
+	  return (MakePlayer(x=player[["x"]]-1, y=player[["y"]], ammo=player[["ammo"]]-1))
+	return(player)
 }
 
 # Desenha o jogador (em branco)
 DrawPlayer <- function(player){
-	symbols(player[["x"]], player[["y"]], rectangles = matrix(c(3,1), ncol = 2),
+	symbols(player[["x"]], player[["y"]], rectangles = matrix(c(player[["xsize"]],player[["ysize"]]), ncol = 2),
 	          inches = FALSE, fg = "white", bg = "white", add = TRUE	)
+	print(player)
 }
 
 # Apaga o jogador (desenha em preto)
 ErasePlayer <- function(player){
-	symbols(player[["x"]], player[["y"]], rectangles = matrix(c(3,1), ncol = 2),
+	symbols(player[["x"]], player[["y"]], rectangles = matrix(c(player[["xsize"]],player[["ysize"]]), ncol = 2),
 	          inches = FALSE, fg = "black", bg = "black", add = TRUE)
 }
 
@@ -35,42 +36,51 @@ DrawBorders <- function(height,width){
 	lines(c(0,height,height,0,0), c(0,0,width,width,0), type = "l", lwd = 2, col = "white")
 }
 
+# Testa se o jogador está no limite da tela
+TestScreenSpace <- function(player,height,width){
+	if(player[["x"]]+player[["xsize"]]/2 > width || player[["x"]]-player[["xsize"]]/2 < 0)
+		return(TRUE)
+	else return(FALSE)
+}
+
 
 game <- function(height=30,width=30){
-	status <- NULL
-
-
 	# Tratamento do teclado
 	keypress <- function(key){
 		p <- player
 		# ESC: termina execucao
 		if(key == "\033")
 			graphics.off()
+		# Teclas de movimento em UpdatePlayer
 		else{
-			ErasePlayer(p)
-			newplayer <- UpdatePlayer(key,p)
-			DrawBorders(height,width)
-			DrawPlayer(newplayer)
+				newplayer <- UpdatePlayer(key,p)
+				if(!TestScreenSpace(newplayer,height,width)){
+					ErasePlayer(p)
+					DrawBorders(height,width)
+					DrawPlayer(newplayer)
+					return(newplayer)
+				}
 		}
-		return(newplayer)
+		return(p)
 	}
 
 	# Cria a janela do jogo
 	par(mar = rep(1,4), bg = "black")
 	plot.new()
-	plot.window(xlim = c(0, 30), ylim = c(0, 30))
+	plot.window(xlim = c(0, width), ylim = c(0, height))
 
 	# Desenha as bordas
 	DrawBorders(height,width)
 	
 	# Cria o jogador na posicao inicial
-	player <- MakePlayer(coordx=15,coordy=0.5)
+	player <- MakePlayer(x=15,y=0.5)
 	
   # Desenha o jogador
 	DrawPlayer(player)
 
+	# Loop principal
 	while(TRUE){
-		Sys.sleep(.05)
+		Sys.sleep(.02)
 		player <- getGraphicsEvent(prompt = "", onKeybd = keypress)		
 
 	}
