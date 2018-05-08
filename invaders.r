@@ -45,25 +45,6 @@ TestScreenSpace <- function(player,height,width){
 
 
 game <- function(height=30,width=30){
-	# Tratamento do teclado
-	keypress <- function(key){
-		p <- player
-		# ESC: termina execucao
-		if(key == "\033")
-			graphics.off()
-		# Teclas de movimento em UpdatePlayer
-		else{
-				newplayer <- UpdatePlayer(key,p)
-				if(!TestScreenSpace(newplayer,height,width)){
-					ErasePlayer(p)
-					DrawBorders(height,width)
-					DrawPlayer(newplayer)
-					return(newplayer)
-				}
-		}
-		return(p)
-	}
-
 	# Cria a janela do jogo
 	par(mar = rep(1,4), bg = "black")
 	plot.new()
@@ -78,11 +59,28 @@ game <- function(height=30,width=30){
   # Desenha o jogador
 	DrawPlayer(player)
 
+	# Tratamento do teclado
+	keypress <- function(key){
+		if(key == "\033")
+			graphics.off()
+		else
+			return(UpdatePlayer(key,player))
+	}
+
 	# Loop principal
 	while(TRUE){
-		Sys.sleep(.02)
-		player <- getGraphicsEvent(prompt = "", onKeybd = keypress)		
+		# Atulizar player conforme eventos do teclado
+		newplayer <- getGraphicsEvent(prompt = "", onKeybd = keypress)
+		# Se a nova posicao e valida, renderiza nova posicao
+		if(!TestScreenSpace(newplayer,height,width)){
+			ErasePlayer(player)
+			player <- newplayer
+			DrawBorders(height,width)
+			DrawPlayer(player)
+		}		
 
+
+		Sys.sleep(.01)
 	}
 
 }
